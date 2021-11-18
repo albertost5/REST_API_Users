@@ -1,0 +1,23 @@
+{
+  "name": "rest_api_users",
+  "version": "1.0.0",
+  "description": "Basic API to manage users.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/albertost5/REST_API_Users.git"
+  },
+  "author": "Alberto Sánchez Torres",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/albertost5/REST_API_Users/issues"
+  },
+  "homepage": "https://github.com/albertost5/REST_API_Users#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^6.0.13"
+  }
+}
