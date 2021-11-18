@@ -1,6 +1,9 @@
 // MODULES
 const express = require('express');
 const mongoose = require('mongoose');
+const users = require('./routes/users');
+const courses = require('./routes/courses');
+
 
 
 // DB CONNECTION
@@ -9,6 +12,11 @@ dbConnection().catch((err) => console.log(`MongoDB's connection failed.`));
 // EXPRESS INSTANCE
 const app = express();
 
+// MIDDLEWARES => app.use( function (error, req, res, next))
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+app.use('/api/users', users);
+app.use('/api/courses', courses);
 
 // APP PORT
 const port = process.env.PORT || 3000;
