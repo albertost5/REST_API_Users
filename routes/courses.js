@@ -8,8 +8,21 @@ const Course = require('../models/course');
 
 
 // ROUTES
-router.get('/', (req, res) => {
-    res.json('Ready first courses endpoint.');
+router.get('/', async (req, res) => {
+    let courses;
+
+    try {
+        courses = await Course.find({ status: true }).select('-_id description title').exec();
+    } catch (error) {
+        res.status(404).json({
+            'code': 404,
+			'message': 'NOT_FOUND',
+			'description': 'Error getting courses.'
+        })
+    }
+
+    res.json(courses);
+
 });
 
 
@@ -61,8 +74,8 @@ router.delete('/:id', async (req, res) => {
     } catch (error) {
         res.status(404).json({
             'code': 404,
-			'message': 'NOT_FOUND',
-			'description': 'Error deleting course.'
+            'message': 'NOT_FOUND',
+            'description': 'Error deleting course.'
         });
     }
 
