@@ -10,8 +10,19 @@ const User = require('../models/user');
 
 
 // ROUTES
-router.get('/', (req, res) => {
-    res.json('Ready first users endpoint.');
+router.get('/', async (req, res) => {
+	let users;
+	try {
+		users = await readUsers();
+	} catch (error) {
+		return res.status(404).json({
+			'code': 404,
+			'message': 'NOT_FOUND',
+			'description': 'Error getting users.'
+		});
+	}
+
+	res.json(users);
 });
 
 router.post('/', async (req, res) => {
@@ -46,7 +57,7 @@ router.put('/:email', async (req, res) => {
 			'description': 'Error updating user.'
 		});
 	}
-	
+
 	res.json({
 		name: user.name,
 		email: user.email,
@@ -54,22 +65,27 @@ router.put('/:email', async (req, res) => {
 	});
 });
 
-router.delete('/:email', async(req, res) => {
+router.delete('/:email', async (req, res) => {
 
 	let user;
-	try{
+	try {
 		user = await disableUser(req.params.email);
-	}catch (err){
-		return res.status(400).json({
-			'code': 400,
-			'message': 'BAD_REQUEST',
+	} catch (err) {
+		return res.status(404).json({
+			'code': 404,
+			'message': 'NOT_FOUND',
 			'description': 'Error deleting user.'
 		});
 	}
-	res.json(`Deleted user with email: ${user.email}`)	
+	res.json(`Deleted user with email: ${user.email}`)
 });
 
 // FUNCTIONS
+async function readUsers() {
+	let users = User.find({ status: true }, 'name email').select("-_id").exec();
+	return users;
+}
+
 async function createUser(body) {
 	let user = new User({
 		email: body.email,
@@ -92,7 +108,7 @@ async function updateUser(userEmail, body) {
 		},
 		{ returnDocument: 'after' }
 	);
-	
+
 	return user;
 }
 
@@ -107,7 +123,7 @@ async function disableUser(userEmail) {
 		},
 		{ returnDocument: 'after' }
 	);
-	
+
 	return user;
 }
 
