@@ -44,6 +44,25 @@ router.post('/', async (req, res) => {
 
 	let body = req.body;
 	// let result = createUser(body);
+
+	User.findOne({ email: body.email }, (err, user) => {
+		if(err){
+			res.status(400).json({
+				'code': 409,
+				'message': 'BAD_REQUEST',
+				'description': 'Something went wrong.'
+			});
+		}
+
+		if(user){
+			res.status(409).json({
+				'code': 409,
+				'message': 'BAD_REQUEST',
+				'description': `The user ${body.email} already exists.`
+			});
+		}
+	});
+
 	const { error, value } = schema.validate({ name: body.name, email: body.email });
 
 	if(error) return res.status(400).json({
