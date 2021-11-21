@@ -102,6 +102,7 @@ router.delete('/:email', async (req, res) => {
 	let user;
 	try {
 		user = await disableUser(req.params.email);
+		console.log(user);
 	} catch (err) {
 		return res.status(404).json({
 			'code': 404,
@@ -109,7 +110,7 @@ router.delete('/:email', async (req, res) => {
 			'description': 'Error deleting user.'
 		});
 	}
-	res.json(`Deleted user with email: ${user.email}`)
+	res.json(`The user, ${user.email}, was deleted.`)
 });
 
 // FUNCTIONS
