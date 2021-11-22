@@ -28,7 +28,7 @@ const schema = Joi.object({
 router.get('/', async (req, res) => {
 	let users;
 	try {
-		users = readUsers();
+		users = await readUsers();
 	} catch (error) {
 		return res.status(404).json({
 			'code': 404,
