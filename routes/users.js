@@ -1,9 +1,9 @@
 // MODULES
 const express = require('express');
-const user = require('../models/user');
 const router = express.Router();
-const User = require('../models/user');
 const Joi = require('joi');
+const bcrypt = require('bcrypt');
+const User = require('../models/user');
 
 
 // MIDDLEWARES
@@ -28,7 +28,7 @@ const schema = Joi.object({
 router.get('/', async (req, res) => {
 	let users;
 	try {
-		users = await readUsers();
+		users = readUsers();
 	} catch (error) {
 		return res.status(404).json({
 			'code': 404,
@@ -43,7 +43,6 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
 
 	let body = req.body;
-	// let result = createUser(body);
 
 	User.findOne({ email: body.email }, (err, user) => {
 		if(err){
@@ -71,10 +70,10 @@ router.post('/', async (req, res) => {
 		'description': error.details[0].message.replace(/\"/g, '').toUpperCase()
 	});
 
-	let result;
+	let user;
 
 	try {
-		result = await createUser(body);
+		user = await createUser(body);
 	} catch (err) {
 		return res.status(400).json({
 			'code': 400,
@@ -83,7 +82,10 @@ router.post('/', async (req, res) => {
 		});
 	}
 
-	res.json(result);
+	res.json({
+		'name': user.name,
+		'email': user.email
+	});
 });
 
 router.put('/:email', async (req, res) => {
@@ -142,10 +144,10 @@ async function createUser(body) {
 	let user = new User({
 		email: body.email,
 		name: body.name,
-		password: body.password
+		password: bcrypt.hashSync(body.password, 10),
 	});
 
-	return await user.save();
+	return user.save();
 }
 
 async function updateUser(userEmail, body) {
