@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 
@@ -12,10 +13,19 @@ router.post('/', async (req, res) => {
         // Return the document or null.
         user = await User.findOne({ email: req.body.email }).exec();
 
-        let validPassword = bcrypt.compareSync(req.body.password, user.password);f
+        let validPassword = bcrypt.compareSync(req.body.password, user.password);
 
         if (user && validPassword) {
-            res.json(`Welcome ${user.name}!!`);
+            let jsonWebToken = jwt.sign({ _id: user._id, name: user.name, email: user.email }, 'whatever', { expiresIn: '1h' });
+            // res.json(`Welcome ${user.name}!!`);
+            res.json(
+                {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    jsonWebToken
+                }
+            );
         } else {
             return res.status(401).json({
                 'code': 401,
