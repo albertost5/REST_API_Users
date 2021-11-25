@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const users = require('./routes/users');
 const courses = require('./routes/courses');
 const auth = require('./routes/auth');
-
+const config = require('config');
 
 
 // DB CONNECTION
@@ -24,10 +24,10 @@ app.use('/api/login', auth);
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
-    console.log(`Running REST API Users..`);
+    console.log(`[${config.get('env')}] Running REST API Users..`);
 });
 
 async function dbConnection(){
-    await mongoose.connect('mongodb://localhost:27017/demo');
-    console.log('Connection successfully to MongoDB.');
+    await mongoose.connect(config.get('dbConfig.HOST'));
+    console.log(`[${config.get('env')}] Connection successfully to MongoDB.`);
 }

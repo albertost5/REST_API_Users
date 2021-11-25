@@ -1,0 +1,11 @@
+{
+    "name": "REST_API_Users",
+    "env": "dev",
+    "dbConfig": {
+        "HOST": "mongodb://localhost:27017/demo"
+    },
+    "tokenConfig": {
+        "secret": "rest-api-users",
+        "expiration": "1h"
+    }
+}

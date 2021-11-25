@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const config = require('config');
 
 
 
@@ -16,13 +17,11 @@ router.post('/', async (req, res) => {
         let validPassword = bcrypt.compareSync(req.body.password, user.password);
 
         if (user && validPassword) {
-            let jsonWebToken = jwt.sign({ _id: user._id, name: user.name, email: user.email }, 'whatever', { expiresIn: '1h' });
+            let jsonWebToken = jwt.sign({ _id: user._id, name: user.name, email: user.email }, config.get('tokenConfig.secret'), { expiresIn: config.get('tokenConfig.expiration') });
             // res.json(`Welcome ${user.name}!!`);
             res.json(
                 {
                     id: user._id,
-                    name: user.name,
-                    email: user.email,
                     jsonWebToken
                 }
             );
