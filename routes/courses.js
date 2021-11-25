@@ -2,17 +2,18 @@
 const express = require('express');
 const router = express.Router();
 const Course = require('../models/course');
+const verifyToken = require('../middlewares/auth');
 
 // MIDDLEWARES
 // router.use(express.json());
 
 
 // ROUTES
-router.get('/', async (req, res) => {
+router.get('/', verifyToken, async (req, res) => {
     let courses;
 
     try {
-        courses = await Course.find({ status: true }).select('-_id description title').exec();
+        courses = await Course.find({ status: true }).select('_id description title').exec();
     } catch (error) {
         res.status(404).json({
             'code': 404,
@@ -26,7 +27,7 @@ router.get('/', async (req, res) => {
 });
 
 
-router.post('/', async (req, res) => {
+router.post('/', verifyToken, async (req, res) => {
 
     let course;
     try {
@@ -38,10 +39,13 @@ router.post('/', async (req, res) => {
             'description': 'Error creating course.'
         });
     }
-    res.json(course);
+    res.json({
+        "title": course.title,
+        "description": course.description
+    });
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyToken, async (req, res) => {
 
     let course;
     let body = req.body;
@@ -63,10 +67,14 @@ router.put('/:id', async (req, res) => {
         });
     }
 
-    res.json(course);
+    res.json({
+        "title": course.title,
+        "description": course.description,
+        "_id": course._id
+    });
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyToken, async (req, res) => {
     let course;
 
     try {

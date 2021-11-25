@@ -92,7 +92,7 @@ router.post('/', async (req, res) => {
 	});
 });
 
-router.put('/:email', async (req, res) => {
+router.put('/:email', verifyToken, async (req, res) => {
 	const EMAIL = req.params.email;
 
 	const { error, value } = schema.validate({ name: req.body.name });
@@ -122,7 +122,7 @@ router.put('/:email', async (req, res) => {
 	});
 });
 
-router.delete('/:email', async (req, res) => {
+router.delete('/:email', verifyToken, async (req, res) => {
 
 	let user;
 	try {
