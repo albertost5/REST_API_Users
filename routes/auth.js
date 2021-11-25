@@ -17,7 +17,7 @@ router.post('/', async (req, res) => {
         let validPassword = bcrypt.compareSync(req.body.password, user.password);
 
         if (user && validPassword) {
-            let jsonWebToken = jwt.sign({ _id: user._id, name: user.name, email: user.email }, config.get('tokenConfig.secret'), { expiresIn: config.get('tokenConfig.expiration') });
+            let jsonWebToken = jwt.sign({ _id: user._id }, config.get('tokenConfig.secret'), { expiresIn: config.get('tokenConfig.expiration') });
             // res.json(`Welcome ${user.name}!!`);
             res.json(
                 {

@@ -4,6 +4,9 @@ const router = express.Router();
 const Joi = require('joi');
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
+const jwt = require('jsonwebtoken');
+const config = require('config');
+const verifyToken = require('../middlewares/auth');
 
 
 // MIDDLEWARES
@@ -24,8 +27,9 @@ const schema = Joi.object({
 });
 
 
+
 // ROUTES
-router.get('/', async (req, res) => {
+router.get('/', verifyToken, async (req, res) => {
 	let users;
 	try {
 		users = await readUsers();
@@ -45,7 +49,7 @@ router.post('/', async (req, res) => {
 	let body = req.body;
 
 	User.findOne({ email: body.email }, (err, user) => {
-		if(err){
+		if (err) {
 			res.status(400).json({
 				'code': 409,
 				'message': 'BAD_REQUEST',
@@ -53,7 +57,7 @@ router.post('/', async (req, res) => {
 			});
 		}
 
-		if(user){
+		if (user) {
 			res.status(409).json({
 				'code': 409,
 				'message': 'BAD_REQUEST',
@@ -64,7 +68,7 @@ router.post('/', async (req, res) => {
 
 	const { error, value } = schema.validate({ name: body.name, email: body.email });
 
-	if(error) return res.status(400).json({
+	if (error) return res.status(400).json({
 		'code': 400,
 		'message': 'BAD_REQUEST',
 		'description': error.details[0].message.replace(/\"/g, '').toUpperCase()
@@ -93,7 +97,7 @@ router.put('/:email', async (req, res) => {
 
 	const { error, value } = schema.validate({ name: req.body.name });
 
-	if(error) return res.status(400).json({
+	if (error) return res.status(400).json({
 		'code': 400,
 		'message': 'BAD_REQUEST',
 		'description': error.details[0].message.replace(/\"/g, '').toUpperCase()
