@@ -128,7 +128,7 @@ router.put('/:email', verifyToken, async (req, res) => {
 		return res.status(403).json({
 			'code': 403,
 			'message': 'FORBIDDEN',
-			'description': `The user doesn't have rights to update other users.`
+			'description': `The user doesn't have right to update other users.`
 		});
 	}
 
@@ -156,7 +156,7 @@ router.delete('/:email', verifyToken, async (req, res) => {
 		return res.status(403).json({
 			'code': 403,
 			'message': 'FORBIDDEN',
-			'description': `The customer doesn't have rights to delete other accounts.`
+			'description': `The customer doesn't have right to delete other accounts.`
 		});
 	}
 });

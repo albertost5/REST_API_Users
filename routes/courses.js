@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const Course = require('../models/course');
 const verifyToken = require('../middlewares/auth');
+const roles = require('./types/roles');
 
 // MIDDLEWARES
 // router.use(express.json());
@@ -17,8 +18,8 @@ router.get('/', verifyToken, async (req, res) => {
     } catch (error) {
         res.status(404).json({
             'code': 404,
-			'message': 'NOT_FOUND',
-			'description': 'Error getting courses.'
+            'message': 'NOT_FOUND',
+            'description': 'Error getting courses.'
         })
     }
 
@@ -46,48 +47,67 @@ router.post('/', verifyToken, async (req, res) => {
 });
 
 router.put('/:id', verifyToken, async (req, res) => {
+    if (req.userRole == roles.ADMIN) {
 
-    let course;
-    let body = req.body;
-    let update = {
-        $set:
-        {
-            title: body.title,
-            description: body.description
+        let course;
+        let body = req.body;
+        let update = {
+            $set:
+            {
+                title: body.title,
+                description: body.description
+            }
+        };
+
+        try {
+            course = await Course.findByIdAndUpdate(req.params.id, update, { returnOriginal: false })
+        } catch (error) {
+            res.status(400).json({
+                'code': 400,
+                'message': 'BAD_REQUEST',
+                'description': 'Error updating course.'
+            });
         }
-    };
 
-    try {
-        course = await Course.findByIdAndUpdate(req.params.id, update, { returnOriginal: false })
-    } catch (error) {
-        res.status(400).json({
-            'code': 400,
-            'message': 'BAD_REQUEST',
-            'description': 'Error updating course.'
+        res.json({
+            "title": course.title,
+            "description": course.description,
+            "_id": course._id
+        });
+
+    } else {
+        res.status(403).json({
+            'code': 403,
+			'message': 'FORBIDDEN',
+			'description': `The customer doesn't have right to update a course.`
         });
     }
-
-    res.json({
-        "title": course.title,
-        "description": course.description,
-        "_id": course._id
-    });
 });
 
 router.delete('/:id', verifyToken, async (req, res) => {
-    let course;
+    if (req.userRole == roles.ADMIN) {
 
-    try {
-        course = await Course.findByIdAndUpdate(req.params.id, { $set: { status: false } }, { returnOriginal: false });
-    } catch (error) {
-        res.status(404).json({
-            'code': 404,
-            'message': 'NOT_FOUND',
-            'description': 'Error deleting course.'
+        let course;
+        try {
+            course = await Course.findByIdAndUpdate(req.params.id, { $set: { status: false } }, { returnOriginal: false });
+        } catch (error) {
+            res.status(404).json({
+                'code': 404,
+                'message': 'NOT_FOUND',
+                'description': 'Error deleting course.'
+            });
+        }
+
+        res.json(`The course, ${course.title}, was deleted.`);
+
+    } else {
+        res.status(403).json({
+            'code': 403,
+			'message': 'FORBIDDEN',
+			'description': `The customer doesn't have right to delete a course.`
         });
     }
 
-    res.json(`The course, ${course.title}, was deleted.`);
 });
 
 // FUNCTIONS
