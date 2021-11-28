@@ -1,14 +1,14 @@
 const jwt = require('jsonwebtoken');
 const config = require('config');
-
+const User = require('../models/user');
 
 
 let verifyToken = (req, res, next) => {
 	let authHeader = req.get('Authorization');
 	if(!authHeader) return res.json({
-		'code': 400,
-		'message': 'BAD_REQUEST',
-		'description': 'The user dont have rights.'
+		'code': 401,
+		'message': 'UNAUTHORIZED',
+		'description': `The customer doesn't have rights, missing authorization.`
 	})
 	let bearer = authHeader?.split(' ');
 	let token = bearer[1];
@@ -21,7 +21,11 @@ let verifyToken = (req, res, next) => {
 				'description': 'Could not connect to the protected route.'
 			});
 		}
+
 		req.userId = jwtDecoded._id;
+		req.userRole = jwtDecoded.role;
+		req.userEmail = jwtDecoded.email;
+		
 		next();
 	});
 };

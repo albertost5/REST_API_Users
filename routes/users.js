@@ -7,6 +7,7 @@ const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const verifyToken = require('../middlewares/auth');
+const roles = require('./types/roles');
 
 
 // MIDDLEWARES
@@ -50,9 +51,9 @@ router.post('/', async (req, res) => {
 
 	User.findOne({ email: body.email }, (err, user) => {
 		if (err) {
-			res.status(400).json({
-				'code': 409,
-				'message': 'BAD_REQUEST',
+			res.status(404).json({
+				'code': 404,
+				'message': 'NOT_FOUND',
 				'description': 'Something went wrong.'
 			});
 		}
@@ -60,7 +61,7 @@ router.post('/', async (req, res) => {
 		if (user) {
 			res.status(409).json({
 				'code': 409,
-				'message': 'BAD_REQUEST',
+				'message': 'CONFLICT',
 				'description': `The user ${body.email} already exists.`
 			});
 		}
@@ -95,47 +96,69 @@ router.post('/', async (req, res) => {
 router.put('/:email', verifyToken, async (req, res) => {
 	const EMAIL = req.params.email;
 
-	const { error, value } = schema.validate({ name: req.body.name });
+	// check if the token has expired
 
-	if (error) return res.status(400).json({
-		'code': 400,
-		'message': 'BAD_REQUEST',
-		'description': error.details[0].message.replace(/\"/g, '').toUpperCase()
-	});
+	if (EMAIL == req.userEmail || req.userRole == roles.ADMIN) {
+		const { error, value } = schema.validate({ name: req.body.name });
 
-	let user;
-
-	try {
-		user = await updateUser(EMAIL, req.body);
-	} catch (err) {
-		return res.status(400).json({
+		if (error) return res.status(400).json({
 			'code': 400,
 			'message': 'BAD_REQUEST',
-			'description': 'Error updating user.'
+			'description': error.details[0].message.replace(/\"/g, '').toUpperCase()
+		});
+
+		let user;
+
+		try {
+			user = await updateUser(EMAIL, req.body);
+		} catch (err) {
+			return res.status(400).json({
+				'code': 400,
+				'message': 'BAD_REQUEST',
+				'description': 'Error updating user.'
+			});
+		}
+
+		res.json({
+			name: user.name,
+			email: user.email,
+			password: user.password
+		});
+	} else {
+		return res.status(403).json({
+			'code': 403,
+			'message': 'FORBIDDEN',
+			'description': `The user doesn't have rights to update other users.`
 		});
 	}
 
-	res.json({
-		name: user.name,
-		email: user.email,
-		password: user.password
-	});
 });
 
 router.delete('/:email', verifyToken, async (req, res) => {
 
-	let user;
-	try {
-		user = await disableUser(req.params.email);
-		console.log(user);
-	} catch (err) {
-		return res.status(404).json({
-			'code': 404,
-			'message': 'NOT_FOUND',
-			'description': 'Error deleting user.'
+	const EMAIL = req.params.email;
+
+	if (EMAIL == req.userEmail || req.userRole == roles.ADMIN) {
+
+		try {
+			user = await disableUser(req.params.email);
+			console.log(user);
+		} catch (err) {
+			return res.status(404).json({
+				'code': 404,
+				'message': 'NOT_FOUND',
+				'description': 'Error deleting user.'
+			});
+		}
+		res.json(`The user, ${user.email}, was deleted.`);
+
+	} else {
+		return res.status(403).json({
+			'code': 403,
+			'message': 'FORBIDDEN',
+			'description': `The customer doesn't have rights to delete other accounts.`
 		});
 	}
-	res.json(`The user, ${user.email}, was deleted.`)
 });
 
 // FUNCTIONS
@@ -161,7 +184,7 @@ async function updateUser(userEmail, body) {
 			$set:
 			{
 				name: body.name,
-				password: body.password
+				password: bcrypt.hashSync(body.password, 10)
 			}
 		},
 		{ returnDocument: 'after' }
