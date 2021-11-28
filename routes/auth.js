@@ -13,7 +13,7 @@ router.post('/', async (req, res) => {
 
     try {
         // Return the document or null.
-        user = await User.findOne({ email: req.body.email }).exec();
+        user = await User.findOne({ email: req.body.email });
 
         let validPassword = bcrypt.compareSync(req.body.password, user.password);
 

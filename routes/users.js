@@ -127,7 +127,7 @@ router.delete('/:email', verifyToken, async (req, res) => {
 
 // FUNCTIONS
 async function readUsers() {
-	let users = User.find({ status: true }, 'name email').select("-_id").exec();
+	let users = User.find({ status: true }, 'name email').select("-_id");
 	return users;
 }
 

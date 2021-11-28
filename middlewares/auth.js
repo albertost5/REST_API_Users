@@ -8,7 +8,7 @@ let verifyToken = (req, res, next) => {
 	if(!authHeader) return res.json({
 		'code': 401,
 		'message': 'UNAUTHORIZED',
-		'description': `The customer doesn't have right, missing authorization.`
+		'description': `The customer doesn't have rights, missing authorization.`
 	})
 	let bearer = authHeader?.split(' ');
 	let token = bearer[1];

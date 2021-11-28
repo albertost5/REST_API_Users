@@ -15,28 +15,30 @@ router.get('/', verifyToken, async (req, res) => {
     let courses;
 
     try {
-        courses = await Course.find({ status: true }).select('_id description title').exec();
+        courses = await Course.find({ status: true }).select('_id description title author').populate('author','-_id name');
     } catch (error) {
         res.status(404).json(errorResponse(404, 'NOT_FOUND', 'Error getting courses.'));
     }
-
+    if(!courses) return res.status(204).json('There is not courses to show.');
     res.json(courses);
 
 });
 
 
 router.post('/', verifyToken, async (req, res) => {
-
+    
     let course;
+
     try {
-        course = await createCourse(req.body);
+        course = await Course.create({ title: req.body.title, description: req.body.description, author: req.userId });
     } catch (error) {
         return res.status(400).json(errorResponse(400, 'BAD_REQUEST', 'Error creating course.'));
     }
 
     res.json({
         "title": course.title,
-        "description": course.description
+        "description": course.description,
+        "author": course.author
     });
 });
 
@@ -87,16 +89,6 @@ router.delete('/:id', verifyToken, async (req, res) => {
     }
 
 });
-
-// FUNCTIONS
-async function createCourse(body) {
-    let course = new Course({
-        title: body.title,
-        description: body.description
-    });
-
-    return course.save();
-}
 
 
 // EXPORT
