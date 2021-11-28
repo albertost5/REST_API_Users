@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const verifyToken = require('../middlewares/auth');
 const roles = require('./types/roles');
-
+const errorResponse = require('../utils/error.util');
 
 // MIDDLEWARES
 // router.use(express.json());
@@ -35,11 +35,7 @@ router.get('/', verifyToken, async (req, res) => {
 	try {
 		users = await readUsers();
 	} catch (error) {
-		return res.status(404).json({
-			'code': 404,
-			'message': 'NOT_FOUND',
-			'description': 'Error getting users.'
-		});
+		return res.status(404).json(errorResponse(404, 'NOT_FOUND', 'Error getting users.'));
 	}
 
 	res.json(users);
@@ -51,19 +47,11 @@ router.post('/', async (req, res) => {
 
 	User.findOne({ email: body.email }, (err, user) => {
 		if (err) {
-			res.status(404).json({
-				'code': 404,
-				'message': 'NOT_FOUND',
-				'description': 'Something went wrong.'
-			});
+			res.status(404).json(errorResponse(404, 'NOT_FOUND', 'Something went wrong.'));
 		}
 
 		if (user) {
-			res.status(409).json({
-				'code': 409,
-				'message': 'CONFLICT',
-				'description': `The user ${body.email} already exists.`
-			});
+			res.status(409).json(errorResponse(409, 'CONFLICT', `The user ${body.email} already exists.`));
 		}
 	});
 
@@ -80,11 +68,7 @@ router.post('/', async (req, res) => {
 	try {
 		user = await createUser(body);
 	} catch (err) {
-		return res.status(400).json({
-			'code': 400,
-			'message': 'BAD_REQUEST',
-			'description': 'Bad request due to malformed sintax.'
-		});
+		return res.status(400).json(errorResponse(400, 'BAD_REQUEST', 'Bad request due to malformed sintax.'));
 	}
 
 	res.json({
@@ -101,22 +85,14 @@ router.put('/:email', verifyToken, async (req, res) => {
 	if (EMAIL == req.userEmail || req.userRole == roles.ADMIN) {
 		const { error, value } = schema.validate({ name: req.body.name });
 
-		if (error) return res.status(400).json({
-			'code': 400,
-			'message': 'BAD_REQUEST',
-			'description': error.details[0].message.replace(/\"/g, '').toUpperCase()
-		});
+		if (error) return res.status(400).json( errorResponse( 400, 'BAD_REQUEST', error.details[0].message.replace(/\"/g, '').toUpperCase() ) );
 
 		let user;
 
 		try {
 			user = await updateUser(EMAIL, req.body);
 		} catch (err) {
-			return res.status(400).json({
-				'code': 400,
-				'message': 'BAD_REQUEST',
-				'description': 'Error updating user.'
-			});
+			return res.status(400).json(errorResponse(400, 'BAD_REQUEST', 'Error updating user.'));
 		}
 
 		res.json({
@@ -125,11 +101,7 @@ router.put('/:email', verifyToken, async (req, res) => {
 			password: user.password
 		});
 	} else {
-		return res.status(403).json({
-			'code': 403,
-			'message': 'FORBIDDEN',
-			'description': `The user doesn't have right to update other users.`
-		});
+		return res.status(403).json(errorResponse(403, 'FORBIDDEN', `The user doesn't have right to update other users.`));
 	}
 
 });
@@ -142,22 +114,14 @@ router.delete('/:email', verifyToken, async (req, res) => {
 
 		try {
 			user = await disableUser(req.params.email);
-			console.log(user);
 		} catch (err) {
-			return res.status(404).json({
-				'code': 404,
-				'message': 'NOT_FOUND',
-				'description': 'Error deleting user.'
-			});
+			return res.status(404).json(errorResponse(404, 'NOT_FOUND', 'Error deleting user.'));
 		}
+
 		res.json(`The user, ${user.email}, was deleted.`);
 
 	} else {
-		return res.status(403).json({
-			'code': 403,
-			'message': 'FORBIDDEN',
-			'description': `The customer doesn't have right to delete other accounts.`
-		});
+		return res.status(403).json(errorResponse(403, 'FORBIDDEN', `The customer doesn't have right to delete other accounts.`));
 	}
 });
 

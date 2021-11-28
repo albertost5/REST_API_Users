@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const config = require('config');
+const errorResponse = require('../utils/error.util');
 
 
 
@@ -26,18 +27,10 @@ router.post('/', async (req, res) => {
                 }
             );
         } else {
-            return res.status(401).json({
-                'code': 401,
-                'message': 'UNATHORIZED',
-                'description': 'Wrong credentials.'
-            });
+            return res.status(401).json(errorResponse(401, 'UNATHORIZED', 'Wrong credentials.'));
         }
     } catch (error) {
-        return res.status(500).json({
-            'code': 500,
-            'message': 'INTERNAL_SERVER_ERROR',
-            'description': 'There was a problem with the server.'
-        });
+        return res.status(500).json(errorResponse(500, 'INTERNAL_SERVER_ERROR', 'There was a problem with the server.'));
     }
 
 });
