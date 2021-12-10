@@ -6,10 +6,6 @@ const verifyToken = require('../middlewares/auth');
 const roles = require('./types/roles');
 const errorResponse = require('../utils/error.util');
 
-// MIDDLEWARES
-// router.use(express.json());
-
-
 // ROUTES
 router.get('/', verifyToken, async (req, res) => {
     let courses;
